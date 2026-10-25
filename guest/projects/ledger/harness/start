@@ -1,0 +1,57 @@
+#!/bin/sh
+replica_start() {
+    for node in $DST_NODES; do
+        mkdir -p "/var/lib/redis-$node"
+        chown redis:redis "/var/lib/redis-$node"
+        set -- --bind 0.0.0.0 --protected-mode no --port 6379 --save "" \
+            --repl-ping-replica-period 1 --repl-timeout 2
+
+        if [ "$node" = replica ]; then
+            set -- "$@" --replicaof primary 6379
+        fi
+
+        /opt/sdk/nodes exec "$node" setpriv --reuid=redis --regid=redis --init-groups \
+            redis-server --daemonize no --dir "/var/lib/redis-$node" --logfile "" "$@" 2>&1 | cat &
+    done
+
+    for node in $DST_NODES; do
+        attempts=0
+
+        until redis-cli -h "$node" ping > /dev/null 2>&1 || [ "$attempts" -ge 200 ]; do
+            attempts=$((attempts + 1))
+            sleep 0.05
+        done
+
+        echo "DST REDIS UP $node $attempts"
+    done
+
+    /opt/sdk/nodes exec primary python /opt/project/harness/replica.py progress &
+}
+
+if [ "$DST_APP" = replica ]; then
+    if [ "$1" != check ]; then
+        replica_start
+    fi
+
+    exit 0
+fi
+
+if [ "$DST_APP" = celery ] || [ "$DST_LOCKING" = redis ]; then
+    /opt/sdk/service redis
+fi
+
+if [ "$DST_APP" = celery ]; then
+    celery -A ledger.celery worker --concurrency 2 --loglevel WARNING \
+        --logfile /dev/console --pidfile /run/celery.pid --detach
+fi
+
+case "$DST_APP" in
+    counter | draws | heartbeat | maze)
+        exit 0
+        ;;
+esac
+
+if [ "$1" != check ]; then
+    gunicorn ledger.wsgi --bind 127.0.0.1:8000 --workers 2 --daemon --chdir /opt/project/src \
+        --pid /run/gunicorn.pid --log-file /dev/console --log-level warning
+fi

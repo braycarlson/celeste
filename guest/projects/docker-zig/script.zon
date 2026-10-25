@@ -1,0 +1,38 @@
+.{
+    .kernel = "images/vmlinux",
+    .disk = "images/docker-zig.ext4",
+    .cmdline =
+    \\console=ttyS0 reboot=k panic=1 pci=off root=/dev/vda rw init=/init loglevel=1
+    \\dst.mode=run
+    ,
+    .cmdline_reboot =
+    \\console=ttyS0 reboot=k panic=1 pci=off root=/dev/vda rw init=/init loglevel=1
+    \\dst.mode=check
+    ,
+    .eventually_ns = 10_000_000_000,
+    .fault_plan = .{
+        .script = .{
+            .{
+                .delay_ns = 300_000_000,
+                .duration_ns = 2_000_000_000,
+                .kind = .pause,
+                .target = .dockerd,
+            },
+            .{
+                .delay_ns = 400_000_000,
+                .duration_ns = 2_000_000_000,
+                .kind = .throttle,
+                .target = .containerd,
+                .throttle_permille = 50,
+            },
+            .{ .delay_ns = 3_000_000_000, .kind = .kill, .target = .dockerd },
+        },
+    },
+    .fault_window_ns = 6_000_000_000,
+    .memory_mib = 1536,
+    .preemption = true,
+    .runner = true,
+    .seed = 1,
+    .seeds = 1,
+    .transcript_output = "images/docker-zig-script.transcript",
+}

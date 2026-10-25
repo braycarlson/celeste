@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+find /var/log -type f -delete
+rm -rf /var/lib/apt/lists/* /var/cache/apt/* /root/.cache /tmp/* /var/tmp/*
+rm -f /var/cache/debconf/*-old /var/lib/dpkg/*-old /var/cache/ldconfig/aux-cache
+rm -f /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
+
+if [ -f /etc/machine-id ]; then
+    : > /etc/machine-id
+fi
+
+find / -xdev -name __pycache__ -type d -prune -exec rm -rf {} +
+python3 -m compileall -q --invalidation-mode unchecked-hash /usr/lib/python3 /usr/lib/python3.13 \
+    /opt/sdk
+
+if [ -x /opt/venv/bin/python ]; then
+    /opt/venv/bin/python -m compileall -q --invalidation-mode unchecked-hash \
+        /opt/venv/lib /opt/project
+fi

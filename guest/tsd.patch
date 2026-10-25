@@ -1,0 +1,108 @@
+diff -ru a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+--- a/arch/x86/kernel/cpu/common.c	2026-10-12 06:53:47.239208000 +0000
++++ b/arch/x86/kernel/cpu/common.c	2026-10-12 06:53:47.253208000 +0000
+@@ -2337,7 +2337,8 @@
+ 
+ 	if (IS_ENABLED(CONFIG_X86_64) || cpu_feature_enabled(X86_FEATURE_VME) ||
+ 	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
+-		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
++		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_DE);
++	cr4_set_bits(X86_CR4_TSD);
+ 
+ 	/*
+ 	 * Initialize the per-CPU GDT with the boot GDT,
+diff -ru a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+--- a/arch/x86/kernel/process.c	2026-10-12 06:53:47.242208000 +0000
++++ b/arch/x86/kernel/process.c	2026-10-12 06:53:47.253208000 +0000
+@@ -257,12 +257,7 @@
+ static void enable_TSC(void)
+ {
+ 	preempt_disable();
+-	if (test_and_clear_thread_flag(TIF_NOTSC))
+-		/*
+-		 * Must flip the CPU state synchronously with
+-		 * TIF_NOTSC in the current running context.
+-		 */
+-		cr4_clear_bits(X86_CR4_TSD);
++	clear_thread_flag(TIF_NOTSC);
+ 	preempt_enable();
+ }
+ 
+@@ -671,9 +666,6 @@
+ 		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
+ 	}
+ 
+-	if ((tifp ^ tifn) & _TIF_NOTSC)
+-		cr4_toggle_bits_irqsoff(X86_CR4_TSD);
+-
+ 	if ((tifp ^ tifn) & _TIF_NOCPUID)
+ 		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));
+ 
+diff -ru a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+--- a/arch/x86/kernel/traps.c	2026-10-12 06:53:47.244208000 +0000
++++ b/arch/x86/kernel/traps.c	2026-10-12 06:53:47.253208000 +0000
+@@ -615,6 +615,54 @@
+ 
+ #define GPFSTR "general protection fault"
+ 
++static DEFINE_PER_CPU(u64, tsc_emulated);
++
++static bool fixup_tsc_exception(struct pt_regs *regs)
++{
++	unsigned char insn[3];
++	unsigned long ip;
++	unsigned int length;
++	u64 tsc;
++
++	if (!(__read_cr4() & X86_CR4_TSD) || test_thread_flag(TIF_NOTSC))
++		return false;
++
++	if (insn_get_effective_ip(regs, &ip))
++		return false;
++
++	if (copy_from_user(insn, (const void __user *)ip, 2) || insn[0] != 0x0f)
++		return false;
++
++	if (insn[1] == 0x31) {
++		length = 2;
++	} else if (insn[1] == 0x01) {
++		if (get_user(insn[2], (const unsigned char __user *)(ip + 2)))
++			return false;
++
++		if (insn[2] != 0xf9)
++			return false;
++
++		length = 3;
++	} else {
++		return false;
++	}
++
++	preempt_disable();
++	tsc = max(ktime_get_ns(), this_cpu_read(tsc_emulated) + 1);
++	this_cpu_write(tsc_emulated, tsc);
++	preempt_enable();
++
++	regs->ax = lower_32_bits(tsc);
++	regs->dx = upper_32_bits(tsc);
++
++	if (length == 3)
++		regs->cx = raw_smp_processor_id();
++
++	regs->ip += length;
++
++	return true;
++}
++
+ static bool fixup_iopl_exception(struct pt_regs *regs)
+ {
+ 	struct thread_struct *t = &current->thread;
+@@ -753,6 +801,9 @@
+ 		if (fixup_iopl_exception(regs))
+ 			goto exit;
+ 
++		if (fixup_tsc_exception(regs))
++			goto exit;
++
+ 		if (fixup_vdso_exception(regs, X86_TRAP_GP, error_code, 0))
+ 			goto exit;
+ 

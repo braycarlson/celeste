@@ -1,0 +1,15 @@
+#!/bin/sh
+(
+    while :; do
+        dockerd \
+            --bridge=none \
+            --host=unix:///var/run/docker.sock \
+            --ip6tables=false \
+            --iptables=false \
+            --log-level=warn \
+            --storage-driver=overlay2 \
+            >> /run/dockerd.log 2>&1
+        echo "DST DOCKERD EXIT $?" > /dev/console
+        sleep 1
+    done
+) &

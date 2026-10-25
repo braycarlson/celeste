@@ -1,0 +1,130 @@
+#!/bin/sh
+cluster_create() {
+    pg_createcluster 17 main > /dev/null
+
+    printf '%s\n' \
+        "listen_addresses = ''" \
+        "max_connections = 20" \
+        "shared_buffers = 32MB" \
+        "ssl = off" \
+        "unix_socket_directories = '/var/run/postgresql'" \
+        > /etc/postgresql/17/main/conf.d/dst.conf
+
+    printf '%s\n' "local all all trust" "host all all 127.0.0.1/32 trust" \
+        "host all all 10.77.0.0/24 trust" > /etc/postgresql/17/main/pg_hba.conf
+}
+
+node_run() {
+    node="$1"
+    shift
+
+    if [ -z "$node" ]; then
+        "$@"
+        return
+    fi
+
+    /opt/sdk/nodes exec "$node" "$@"
+}
+
+postgres_start() {
+    export PATH="/usr/lib/postgresql/17/bin:$PATH"
+    mkdir -p /run/postgresql
+    chown postgres:postgres /run/postgresql
+
+    if [ ! -f /var/lib/postgresql/17/main/PG_VERSION ]; then
+        cluster_create
+    fi
+
+    set -- -c config_file=/etc/postgresql/17/main/postgresql.conf
+
+    if [ -n "$DST_NODE_POSTGRES" ]; then
+        set -- "$@" -c listen_addresses=0.0.0.0
+    elif [ "$DST_PG" = tcp ]; then
+        set -- "$@" -c listen_addresses=127.0.0.1
+    fi
+
+    if [ "$DST_PG_SYNC_RETRY" = 1 ]; then
+        set -- "$@" -c data_sync_retry=on
+    fi
+
+    attempts=0
+
+    until node_run "$DST_NODE_POSTGRES" setpriv --reuid=postgres --regid=postgres --init-groups \
+        pg_ctl -D /var/lib/postgresql/17/main -o "$*" -w start; do
+        attempts=$((attempts + 1))
+
+        if [ "$attempts" -ge 40 ]; then
+            return 1
+        fi
+
+        sleep 0.25
+    done
+}
+
+rabbitmq_start() {
+    mkdir -p /run/rabbitmq
+    chown rabbitmq:rabbitmq /run/rabbitmq
+
+    set -- HOME=/var/lib/rabbitmq
+
+    if [ -n "$DST_RABBITMQ_LOGS" ]; then
+        set -- "$@" RABBITMQ_LOGS="$DST_RABBITMQ_LOGS"
+    fi
+
+    setpriv --reuid=rabbitmq --regid=rabbitmq --init-groups \
+        env -C /var/lib/rabbitmq "$@" /usr/lib/rabbitmq/bin/rabbitmq-server 2>&1 | cat &
+
+    if python3 -m dst.wait 127.0.0.1 5672 1200; then
+        echo "DST RABBITMQ UP"
+        return 0
+    fi
+
+    echo "DST RABBITMQ DOWN"
+    busybox ps -o pid,user,args
+    find /var/log/rabbitmq /var/lib/rabbitmq -maxdepth 1 -type f \
+        \( -name "*.log" -o -name "erl_crash.dump" \) -exec head -c 4096 {} +
+    return 1
+}
+
+redis_start() {
+    host="${DST_HOST_REDIS:-127.0.0.1}"
+
+    if [ -n "$DST_NODE_REDIS" ]; then
+        set -- --bind 0.0.0.0 --protected-mode no
+    else
+        set -- --bind 127.0.0.1
+    fi
+
+    if [ "$DST_REDIS" = durable ]; then
+        set -- "$@" --appendonly yes --appendfsync always
+    fi
+
+    node_run "$DST_NODE_REDIS" setpriv --reuid=redis --regid=redis --init-groups \
+        redis-server --port 6379 --daemonize no \
+        --dir /var/lib/redis --logfile "" "$@" 2>&1 | cat &
+
+    attempts=0
+
+    until redis-cli -h "$host" ping > /dev/null 2>&1 || [ "$attempts" -ge 200 ]; do
+        attempts=$((attempts + 1))
+        sleep 0.05
+    done
+
+    echo "DST REDIS UP $attempts"
+}
+
+case "$1" in
+    postgres)
+        postgres_start
+        ;;
+    rabbitmq)
+        rabbitmq_start
+        ;;
+    redis)
+        redis_start
+        ;;
+    *)
+        echo "service: unknown service $1" >&2
+        exit 2
+        ;;
+esac

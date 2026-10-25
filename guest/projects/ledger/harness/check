@@ -1,0 +1,22 @@
+#!/bin/sh
+if [ "$DST_APP" = counter ]; then
+    exec python /opt/project/harness/counter.py check
+fi
+
+if [ "$DST_APP" = maze ]; then
+    exec python /opt/project/harness/maze.py check
+fi
+
+if [ "$DST_APP" = draws ]; then
+    exec python /opt/project/harness/draws.py check
+fi
+
+if [ "$DST_APP" = heartbeat ]; then
+    exec python /opt/project/harness/heartbeat.py check
+fi
+
+if [ "$DST_APP" = replica ]; then
+    exec python /opt/project/harness/replica.py check
+fi
+
+exec python /opt/project/harness/check.py

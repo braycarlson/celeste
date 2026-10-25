@@ -1,0 +1,5 @@
+[extend-per-file-ignores]
+"guest/**/*.go" = ["TS029"]
+"guest/projects/ledger/src/ledger/settings.py" = ["TS005"]
+"guest/projects/ledger/src/ledger/transfers.py" = ["TS005"]
+"guest/sdk/python/dst/__init__.py" = ["TS005"]

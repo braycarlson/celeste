@@ -1,0 +1,18 @@
+#!/bin/busybox sh
+/bin/busybox --install -s /bin
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+echo "VERIFY UP"
+touch /data/target
+size=$(stat -c %s /data/target)
+sectors=$(fold -w 512 /data/target | awk '
+    /^A+$/ { a++ }
+    /^B+$/ { b++ }
+    !/^(A+|B+)$/ { m++ }
+    END { printf "a=%d b=%d mixed=%d", a, b, m }
+')
+echo "VERIFY size=$size $sectors"
+dmesg | grep -i "ext4.*error" && echo "VERIFY EXT4 ERRORS"
+echo "VERIFY DONE"
+reboot -f

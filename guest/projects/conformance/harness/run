@@ -1,0 +1,2 @@
+#!/bin/sh
+exec "/opt/project/bin/conformance-$DST_APP" run

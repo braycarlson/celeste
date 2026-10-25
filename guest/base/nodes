@@ -1,0 +1,52 @@
+#!/bin/sh
+node_address() {
+    awk -v name="$1" '$2 == name { print $1; exit }' /etc/hosts
+}
+
+node_exec() {
+    node="$1"
+    shift
+
+    echo $$ > "/sys/fs/cgroup/dst/$node/cgroup.procs"
+    exec ip netns exec "$node" "$@"
+}
+
+nodes_up() {
+    ip link add dst0 type bridge
+    ip addr add 10.77.0.1/24 dev dst0
+    ip link set dst0 up
+    mkdir -p /sys/fs/cgroup/dst /run/dst/progress
+    echo +cpu > /sys/fs/cgroup/dst/cgroup.subtree_control
+
+    for node in $DST_NODES; do
+        address="$(node_address "$node")"
+
+        if [ -z "$address" ]; then
+            echo "nodes: /etc/hosts names no address for $node" >&2
+            return 1
+        fi
+
+        ip netns add "$node"
+        ip link add "veth-$node" type veth peer name eth0 netns "$node"
+        ip link set "veth-$node" master dst0 up
+        ip -n "$node" addr add "$address/24" dev eth0
+        ip -n "$node" link set lo up
+        ip -n "$node" link set eth0 up
+        mkdir -p "/sys/fs/cgroup/dst/$node"
+        echo "DST NODE $node $address"
+    done
+}
+
+case "$1" in
+    exec)
+        shift
+        node_exec "$@"
+        ;;
+    up)
+        nodes_up
+        ;;
+    *)
+        echo "nodes: unknown command $1" >&2
+        exit 2
+        ;;
+esac

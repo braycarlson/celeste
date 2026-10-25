@@ -1,0 +1,69 @@
+#!/bin/sh
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mount -t cgroup2 cgroup2 /sys/fs/cgroup
+echo +cpu > /sys/fs/cgroup/cgroup.subtree_control
+chmod 0622 /dev/console
+mkdir -p /dev/shm
+mount -t tmpfs tmpfs /dev/shm
+mount -t tmpfs tmpfs /run
+mount -t tmpfs tmpfs /tmp
+mount -o remount,rw /
+ip link set lo up
+
+export HOME=/root
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export PYTHONDONTWRITEBYTECODE=1
+export PYTHONPATH=/opt/sdk
+
+for word in $(cat /proc/cmdline); do
+    case "$word" in
+        dst.*=*)
+            key="${word%%=*}"
+            key="$(echo "${key#dst.}" | tr 'a-z.' 'A-Z_')"
+            export "DST_$key=${word#*=}"
+            ;;
+    esac
+done
+
+. /opt/project/harness/env
+
+if [ -n "$DST_NODES" ]; then
+    /opt/sdk/nodes up
+fi
+
+sh -c 'stty -echo; export PAGER=cat; exec sh' < /dev/ttyS1 > /dev/ttyS1 2>&1 &
+
+echo "DST GUEST UP"
+
+if [ "$DST_MODE" = halt ]; then
+    busybox reboot -f
+fi
+
+if [ "$DST_MODE" = check ]; then
+    rm -f /var/lib/dst-filler
+fi
+
+for service in $DST_SERVICES; do
+    /opt/sdk/service "$service"
+    echo "DST SERVICE $service EXIT $?"
+done
+
+if [ ! -f /var/lib/dst-setup ]; then
+    /opt/project/harness/setup
+    echo "DST SETUP EXIT $?"
+    : > /var/lib/dst-setup
+    sync
+fi
+
+/opt/project/harness/start "$DST_MODE"
+
+if [ "$DST_MODE" = check ]; then
+    /opt/project/harness/check
+else
+    /opt/project/harness/run
+fi
+
+sync
+busybox reboot -f
