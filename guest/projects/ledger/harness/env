@@ -1,0 +1,20 @@
+export DST_SERVICES=postgres
+export PATH="/opt/venv/bin:$PATH"
+export DJANGO_SETTINGS_MODULE=ledger.settings
+export PYTHONPATH="$PYTHONPATH:/opt/project/src"
+
+if [ "$DST_APP" = replica ]; then
+    export DST_HOST_REDIS=primary
+    export DST_NODE_REDIS=primary
+    export DST_NODES=primary
+
+    if [ "$DST_REPLICAS" != 0 ]; then
+        export DST_NODES="primary replica"
+    fi
+elif [ "$DST_TOPOLOGY" = nodes ]; then
+    export DST_HOST_POSTGRES=db
+    export DST_HOST_REDIS=cache
+    export DST_NODE_POSTGRES=db
+    export DST_NODE_REDIS=cache
+    export DST_NODES="db cache"
+fi

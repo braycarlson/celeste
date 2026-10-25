@@ -1,0 +1,14 @@
+[package]
+name = "conformance-rust"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "conformance-rust"
+path = "src/main.rs"
+
+[dependencies]
+dst = { path = "../../../sdk/rust" }
+
+[profile.release]
+overflow-checks = true

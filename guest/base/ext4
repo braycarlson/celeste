@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+source="$1"
+image="$2"
+size="$3"
+uuid="$4"
+hash_seed="$5"
+epoch="$6"
+
+printf '%s\n' "127.0.0.1 localhost" "::1 localhost" > "$source/etc/hosts"
+
+if [ -f "$source/opt/project/harness/nodes" ]; then
+    cat "$source/opt/project/harness/nodes" >> "$source/etc/hosts"
+fi
+
+printf '%s\n' "dst" > "$source/etc/hostname"
+find "$source" -exec touch -h -d "@$epoch" {} +
+
+E2FSPROGS_FAKE_TIME="$epoch" mkfs.ext4 -q -b 4096 -d "$source" \
+    -U "$uuid" \
+    -E "hash_seed=$hash_seed,root_owner=0:0" \
+    "$image" "$size"
+
+find "$source" -mindepth 1 \
+    | sed "s|^$source\(.*\)|set_inode_field \"\1\" ctime @$epoch|" > /tmp/ctime.debugfs
+echo "set_inode_field / ctime @$epoch" >> /tmp/ctime.debugfs
+E2FSPROGS_FAKE_TIME="$epoch" debugfs -w -f /tmp/ctime.debugfs "$image" > /dev/null

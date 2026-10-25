@@ -1,0 +1,27 @@
+.{
+    .kernel = "images/vmlinux",
+    .disk = "images/docker-zig.ext4",
+    .cmdline =
+    \\console=ttyS0 reboot=k panic=1 pci=off root=/dev/vda rw init=/init loglevel=1
+    \\dst.mode=run
+    ,
+    .cmdline_reboot =
+    \\console=ttyS0 reboot=k panic=1 pci=off root=/dev/vda rw init=/init loglevel=1
+    \\dst.mode=check
+    ,
+    .cores_max = 4,
+    .crash_window_ns = 3_000_000_000,
+    .eventually_ns = 20_000_000_000,
+    .fault_window_ns = 2_000_000_000,
+    .fault_families = .{ .disk_errors = false, .network = false },
+    .fault_roster = .docker,
+    .faults = true,
+    .jitter_ns_max = 300_000,
+    .memory_mib = 1536,
+    .preemption = true,
+    .replay_max = 4,
+    .runner = true,
+    .seed = 1,
+    .seeds = 32,
+    .transcript_output = "images/docker-zig-faults.transcript",
+}

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /opt/project/bin/docker-zig-driver run

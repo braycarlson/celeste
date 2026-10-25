@@ -1,0 +1,16 @@
+#!/bin/busybox sh
+/bin/busybox --install -s /bin
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mount -o remount,rw /
+echo "CRASH WORKLOAD UP"
+dd if=/dev/zero bs=4096 count=256 2>/dev/null | tr '\000' A > /data/target
+sync
+echo "SYNCED"
+dd if=/dev/zero bs=4096 count=256 2>/dev/null | tr '\000' B \
+    | dd of=/data/target bs=4096 iflag=fullblock oflag=direct conv=notrunc 2>/dev/null
+echo "OVERWRITTEN"
+printf '\001' | dd of=/dev/port bs=1 seek=1285 count=1 2>/dev/null
+echo "STILL RUNNING"
+reboot -f

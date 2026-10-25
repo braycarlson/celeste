@@ -1,0 +1,25 @@
+#!/bin/busybox sh
+/bin/busybox --install -s /bin
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+sh -c 'stty -echo; exec sh' < /dev/ttyS1 > /dev/ttyS1 2>&1 &
+echo "CELESTE GUEST UP: $(uname -r) root=$(cat /proc/mounts | grep ' / ' | cut -d' ' -f1,3)"
+mount -o remount,rw /
+echo "written at $(date)" > /data/note.txt
+dd if=/dev/urandom of=/data/blob bs=4096 count=64 2>/dev/null
+sync
+cat /data/note.txt
+md5sum /data/blob
+df -k / | tail -1
+if grep -q ' spin' /proc/cmdline; then
+    ( while :; do :; done ) &
+    spinner=$!
+    sleep 1
+    echo "SLEEP WOKE"
+    kill $spinner
+fi
+cat /proc/uptime
+/bin/tsc-probe
+echo "CHECK DONE"
+reboot -f
