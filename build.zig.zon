@@ -1,0 +1,13 @@
+.{
+    .name = .celeste,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.17.1",
+    .fingerprint = 0xf0d75be98ad5fea,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "LICENSE",
+        "src",
+    },
+    .dependencies = .{},
+}

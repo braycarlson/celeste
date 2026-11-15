@@ -1,0 +1,8 @@
+extend_select = ["TS022", "TS026"]
+
+[extend-per-file-ignores]
+"guest/**/*.go" = ["TS029"]
+"tests/fixtures/ledger/src/ledger/settings.py" = ["TS005"]
+"tests/fixtures/ledger/src/ledger/transfers.py" = ["TS005"]
+"guest/sdk/python/celeste/lifecycle.py" = ["TS005"]
+"guest/sdk/python/celeste/properties.py" = ["TS005"]

@@ -1,0 +1,4 @@
+#!/bin/sh
+setpriv --reuid=postgres --regid=postgres --init-groups createuser ledger
+setpriv --reuid=postgres --regid=postgres --init-groups createdb --owner ledger ledger
+cd /opt/project/src && python manage.py migrate --verbosity 0

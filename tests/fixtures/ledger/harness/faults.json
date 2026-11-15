@@ -1,0 +1,62 @@
+{
+    "links": {
+        "postgres": {
+            "node_env": "CELESTE_NODE_POSTGRES",
+            "port": 5432
+        },
+        "rabbitmq": {
+            "node_env": "CELESTE_NODE_RABBITMQ",
+            "port": 5672
+        },
+        "redis": {
+            "node_env": "CELESTE_NODE_REDIS",
+            "port": 6379
+        }
+    },
+    "targets": {
+        "celery_worker": {
+            "parent_pidfile": "/run/celery.pid"
+        },
+        "gunicorn_worker": {
+            "parent_pidfile": "/run/gunicorn.pid"
+        },
+        "postgres_backend": {
+            "command_contains": [
+                "[local]",
+                "127.0.0.1(",
+                "10.77.0.1("
+            ],
+            "node_env": "CELESTE_NODE_POSTGRES",
+            "parent_pidfile": "/var/lib/postgresql/17/main/postmaster.pid"
+        },
+        "postmaster": {
+            "node_env": "CELESTE_NODE_POSTGRES",
+            "pidfile": "/var/lib/postgresql/17/main/postmaster.pid",
+            "restart": [
+                "/opt/project/harness/service",
+                "postgres"
+            ]
+        },
+        "rabbitmq": {
+            "command_contains": [
+                "-s rabbit"
+            ],
+            "node_env": "CELESTE_NODE_RABBITMQ",
+            "restart": [
+                "/opt/project/harness/service",
+                "rabbitmq"
+            ]
+        },
+        "redis_server": {
+            "command_prefix": "redis-server",
+            "node_env": "CELESTE_NODE_REDIS",
+            "restart": [
+                "/opt/project/harness/service",
+                "redis"
+            ]
+        },
+        "workload": {
+            "workload": true
+        }
+    }
+}

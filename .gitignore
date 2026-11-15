@@ -1,0 +1,9 @@
+.env
+.tigerstyle_cache/
+.zig-cache/
+__pycache__/
+celeste.memory
+images/
+tests/conformance/go/conformance
+zig-out/
+zig-pkg/

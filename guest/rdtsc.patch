@@ -1,0 +1,58 @@
+diff -ru a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
+--- a/arch/x86/include/asm/stackprotector.h	2026-10-11 21:49:10.649026607 -0600
++++ b/arch/x86/include/asm/stackprotector.h	2026-10-11 21:49:10.665828786 -0600
+@@ -63,7 +63,7 @@
+ 	 * on during the bootup the random pool has true entropy too.
+ 	 */
+ 	get_random_bytes(&canary, sizeof(canary));
+-	tsc = rdtsc();
++	tsc = get_cycles();
+ 	canary += tsc + (tsc << 32UL);
+ 	canary &= CANARY_MASK;
+ 
+diff -ru a/arch/x86/include/asm/timex.h b/arch/x86/include/asm/timex.h
+--- a/arch/x86/include/asm/timex.h	2026-10-11 21:49:10.635437018 -0600
++++ b/arch/x86/include/asm/timex.h	2026-10-11 21:49:10.665775055 -0600
+@@ -7,8 +7,7 @@
+ 
+ static inline unsigned long random_get_entropy(void)
+ {
+-	if (!IS_ENABLED(CONFIG_X86_TSC) &&
+-	    !cpu_feature_enabled(X86_FEATURE_TSC))
++	if (!cpu_feature_enabled(X86_FEATURE_TSC))
+ 		return random_get_entropy_fallback();
+ 	return rdtsc();
+ }
+diff -ru a/arch/x86/include/asm/tsc.h b/arch/x86/include/asm/tsc.h
+--- a/arch/x86/include/asm/tsc.h	2026-10-11 21:49:10.642408713 -0600
++++ b/arch/x86/include/asm/tsc.h	2026-10-11 21:49:10.665803990 -0600
+@@ -20,8 +20,7 @@
+ 
+ static inline cycles_t get_cycles(void)
+ {
+-	if (!IS_ENABLED(CONFIG_X86_TSC) &&
+-	    !cpu_feature_enabled(X86_FEATURE_TSC))
++	if (!cpu_feature_enabled(X86_FEATURE_TSC))
+ 		return 0;
+ 	return rdtsc();
+ }
+diff -ru a/arch/x86/kernel/espfix_64.c b/arch/x86/kernel/espfix_64.c
+--- a/arch/x86/kernel/espfix_64.c	2026-10-11 21:49:10.654496260 -0600
++++ b/arch/x86/kernel/espfix_64.c	2026-10-11 21:49:32.029446648 -0600
+@@ -33,6 +33,7 @@
+ #include <asm/pgalloc.h>
+ #include <asm/setup.h>
+ #include <asm/espfix.h>
++#include <asm/tsc.h>
+ 
+ /*
+  * Note: we only need 6*8 = 48 bytes for the espfix stack, but round
+@@ -102,7 +103,7 @@
+ 	 */
+ 	if (!arch_get_random_longs(&rand, 1)) {
+ 		/* The constant is an arbitrary large prime */
+-		rand = rdtsc();
++		rand = get_cycles();
+ 		rand *= 0xc345c6b72fd16123UL;
+ 	}
+ 

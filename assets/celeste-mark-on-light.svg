@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="377" height="377" viewBox="0 0 377 377" role="img" aria-label="celeste">
+    <title>celeste</title>
+    <defs>
+        <radialGradient id="celeste-mark-on-light-1" gradientUnits="userSpaceOnUse" cx="47.125" cy="47.125" r="405.275">
+            <stop offset="0.000" stop-color="#86D3E8"/>
+            <stop offset="0.333" stop-color="#3E9FC9"/>
+            <stop offset="0.667" stop-color="#17669A"/>
+            <stop offset="1.000" stop-color="#0D4A76"/>
+        </radialGradient>
+        <linearGradient id="celeste-mark-on-light-2" gradientUnits="userSpaceOnUse" x1="9.425" y1="235.625" x2="348.725" y2="329.875">
+            <stop offset="0.000" stop-color="#BDF1EA"/>
+            <stop offset="0.333" stop-color="#86E0D6"/>
+            <stop offset="0.667" stop-color="#3CC0B6"/>
+            <stop offset="1.000" stop-color="#1A9AA0"/>
+        </linearGradient>
+        <linearGradient id="celeste-mark-on-light-3" gradientUnits="userSpaceOnUse" x1="47.125" y1="273.325" x2="254.475" y2="377">
+            <stop offset="0.000" stop-color="#5FB0D6"/>
+            <stop offset="0.500" stop-color="#2E83B6"/>
+            <stop offset="1.000" stop-color="#145A8C"/>
+        </linearGradient>
+        <linearGradient id="celeste-mark-on-light-4" gradientUnits="userSpaceOnUse" x1="213.451" y1="138.751" x2="213.451" y2="329.875">
+            <stop offset="0.000" stop-color="#3A8DC0"/>
+            <stop offset="0.500" stop-color="#114B7C"/>
+            <stop offset="1.000" stop-color="#072B4D"/>
+        </linearGradient>
+        <radialGradient id="celeste-mark-on-light-5" gradientUnits="userSpaceOnUse" cx="78.29" cy="377" r="154.506">
+            <stop offset="0.822" stop-color="#0D4A76" stop-opacity="0.420"/>
+            <stop offset="1.000" stop-color="#0D4A76" stop-opacity="0.000"/>
+        </radialGradient>
+        <clipPath id="celeste-mark-on-light-6">
+            <path d="M-770.01 1125.03L926.59 -371.03L178.57 -1219.33L-1518.04 276.72Z"/>
+        </clipPath>
+        <clipPath id="celeste-mark-on-light-7">
+            <path d="M-770.01 1125.03L926.59 -371.03L1674.62 477.28L-21.99 1973.33Z"/>
+        </clipPath>
+        <radialGradient id="celeste-mark-on-light-8" gradientUnits="userSpaceOnUse" cx="78.29" cy="377" r="78.493">
+            <stop offset="0.650" stop-color="#145A8C" stop-opacity="0.000"/>
+            <stop offset="1.000" stop-color="#145A8C" stop-opacity="0.420"/>
+        </radialGradient>
+        <radialGradient id="celeste-mark-on-light-9" gradientUnits="userSpaceOnUse" cx="253.05" cy="222.898" r="182.008">
+            <stop offset="0.849" stop-color="#145A8C" stop-opacity="0.420"/>
+            <stop offset="1.000" stop-color="#145A8C" stop-opacity="0.000"/>
+        </radialGradient>
+        <clipPath id="celeste-mark-on-light-10">
+            <path d="M-895.3 287.17L1366.7 287.17L1366.7 1418.17L-895.3 1418.17Z"/>
+        </clipPath>
+        <radialGradient id="celeste-mark-on-light-11" gradientUnits="userSpaceOnUse" cx="253.05" cy="222.898" r="105.995">
+            <stop offset="0.741" stop-color="#072B4D" stop-opacity="0.000"/>
+            <stop offset="1.000" stop-color="#072B4D" stop-opacity="0.420"/>
+        </radialGradient>
+    </defs>
+    <g transform="translate(0 0)" fill-rule="evenodd">
+        <path fill="url(#celeste-mark-on-light-1)" d="M341 77.7A188.5 188.5 0 0 0 16.65 265.96A127 127 0 0 1 56.81 251.82A168.95 168.95 0 0 1 341 77.7Z"/>
+        <path fill="url(#celeste-mark-on-light-2)" d="M21.24 275.43A116.5 116.5 0 0 1 165.67 299.95A116.5 116.5 0 0 0 341 299.3A188.5 188.5 0 0 1 249.5 366.86A144 144 0 0 1 145.04 318.14A89 89 0 0 0 35.69 298.86A188.5 188.5 0 0 1 21.24 275.43Z"/>
+        <path fill="url(#celeste-mark-on-light-3)" d="M42.16 307.32A78.49 78.49 0 0 1 137.16 325.09A154.51 154.51 0 0 0 221.35 374.12A188.5 188.5 0 0 1 42.16 307.32Z"/>
+        <path fill="url(#celeste-mark-on-light-4)" d="M213.45 216A44.5 44.5 0 0 1 235.7 177.46A116.5 116.5 0 0 1 283.8 162.3A72 72 0 0 0 331.03 138.75A72 72 0 0 1 283.91 219.21A72 72 0 0 0 248.97 328.81A105.99 105.99 0 0 1 188.44 306.92A72 72 0 0 0 142.99 219.21A72 72 0 0 1 95.87 138.75A72 72 0 0 0 143.11 162.3A116.5 116.5 0 0 1 191.2 177.46A44.5 44.5 0 0 1 213.45 216Z"/>
+        <path fill="url(#celeste-mark-on-light-5)" d="M341 77.7A188.5 188.5 0 0 0 16.65 265.96A127 127 0 0 1 56.81 251.82A168.95 168.95 0 0 1 341 77.7Z"/>
+        <path clip-path="url(#celeste-mark-on-light-6)" fill="url(#celeste-mark-on-light-8)" d="M42.16 307.32A78.49 78.49 0 0 1 137.16 325.09A154.51 154.51 0 0 0 221.35 374.12A188.5 188.5 0 0 1 42.16 307.32Z"/>
+        <path clip-path="url(#celeste-mark-on-light-7)" fill="url(#celeste-mark-on-light-9)" d="M42.16 307.32A78.49 78.49 0 0 1 137.16 325.09A154.51 154.51 0 0 0 221.35 374.12A188.5 188.5 0 0 1 42.16 307.32Z"/>
+        <path clip-path="url(#celeste-mark-on-light-10)" fill="url(#celeste-mark-on-light-11)" d="M213.45 216A44.5 44.5 0 0 1 235.7 177.46A116.5 116.5 0 0 1 283.8 162.3A72 72 0 0 0 331.03 138.75A72 72 0 0 1 283.91 219.21A72 72 0 0 0 248.97 328.81A105.99 105.99 0 0 1 188.44 306.92A72 72 0 0 0 142.99 219.21A72 72 0 0 1 95.87 138.75A72 72 0 0 0 143.11 162.3A116.5 116.5 0 0 1 191.2 177.46A44.5 44.5 0 0 1 213.45 216Z"/>
+    </g>
+</svg>

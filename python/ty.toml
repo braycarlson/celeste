@@ -1,0 +1,5 @@
+[environment]
+extra-paths = ["../guest/sdk/python", "src"]
+
+[rules]
+invalid-argument-type = "warn"

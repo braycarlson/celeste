@@ -1,0 +1,3 @@
+# celeste
+
+A hypervisor for deterministic simulation testing. The hypervisor runs a Linux guest on KVM and derives each clock, interrupt, and random draw from one seed, so a run replays exactly and a failure reproduces on the first try. Each seed injects faults such as disk errors, torn writes, clock jumps, process kills, and network partitions, then cuts the power, reboots the guest, and checks that no acknowledged write was lost. A guided search forks from snapshots to reach new behavior, and a failure shrinks to the faults that caused it. The guest interface is language-agnostic, with SDKs for C, Go, Python, Rust, and Zig, and the host needs an Intel processor or an AMD Zen 2 or newer.

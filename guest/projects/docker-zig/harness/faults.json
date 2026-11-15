@@ -1,0 +1,10 @@
+{
+    "targets": {
+        "containerd": {
+            "program": "containerd"
+        },
+        "dockerd": {
+            "program": "dockerd"
+        }
+    }
+}

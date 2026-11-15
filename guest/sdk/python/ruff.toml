@@ -1,0 +1,7 @@
+extend = "../../../python/ruff.toml"
+
+[lint.flake8-bandit]
+hardcoded-tmp-directory = ["/tmp", "/var/tmp"]
+
+[lint.isort]
+known-first-party = ["celeste"]

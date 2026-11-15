@@ -1,0 +1,71 @@
+#!/bin/sh
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mount -t cgroup2 cgroup2 /sys/fs/cgroup
+echo +cpu > /sys/fs/cgroup/cgroup.subtree_control
+chmod 0622 /dev/console
+mkdir -p /dev/shm
+mount -t tmpfs tmpfs /dev/shm
+mount -t tmpfs tmpfs /run
+mount -t tmpfs tmpfs /tmp
+mount -o remount,rw /
+ip link set lo up
+
+export HOME=/root
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export PYTHONDONTWRITEBYTECODE=1
+export PYTHONPATH=/opt/sdk
+
+for word in $(cat /proc/cmdline); do
+    case "$word" in
+        celeste.*=*)
+            key="${word%%=*}"
+            key="$(echo "${key#celeste.}" | tr 'a-z.' 'A-Z_')"
+            export "CELESTE_$key=${word#*=}"
+            ;;
+    esac
+done
+
+if [ -f /opt/project/harness/env ]; then
+    . /opt/project/harness/env
+fi
+
+if [ -n "$CELESTE_NODES" ]; then
+    /opt/sdk/nodes up
+fi
+
+sh -c 'stty -echo; export PAGER=cat; exec sh' < /dev/ttyS1 > /dev/ttyS1 2>&1 &
+
+echo "CELESTE GUEST UP"
+
+if [ "$CELESTE_MODE" = halt ]; then
+    busybox reboot -f
+fi
+
+if [ "$CELESTE_MODE" = check ]; then
+    rm -f /var/lib/celeste-filler
+fi
+
+if [ -x /opt/project/harness/services ]; then
+    /opt/project/harness/services
+    echo "CELESTE SERVICES EXIT $?"
+fi
+
+if [ ! -f /var/lib/celeste-setup ]; then
+    /opt/project/harness/setup
+    echo "CELESTE SETUP EXIT $?"
+    : > /var/lib/celeste-setup
+    sync
+fi
+
+/opt/project/harness/start "$CELESTE_MODE"
+
+if [ "$CELESTE_MODE" = check ]; then
+    /opt/project/harness/check
+else
+    /opt/project/harness/run
+fi
+
+sync
+busybox reboot -f

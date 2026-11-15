@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p /var/lib/tigerstyle
+cp -r /opt/project/corpus /var/lib/tigerstyle/work
